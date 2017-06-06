@@ -2,6 +2,7 @@ package pers.zinclee123.httputil;
 
 import android.text.TextUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -14,6 +15,7 @@ import io.reactivex.annotations.NonNull;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -93,6 +95,31 @@ public class HttpUtils {
         }).observeOn(AndroidSchedulers.mainThread());
     }
 
+    public Observable<String> postFile(final String url,final Map<String ,Object> params,final Map<String,File> files){
+        return Observable.create(new ObservableOnSubscribe<String>() {
+            @Override
+            public void subscribe(@NonNull final ObservableEmitter<String> e) throws Exception {
+                Request request = new Request.Builder()
+                        .url(url)
+                        .post(generatePostFileBody(params,files))
+                        .build();
+                client.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException exception) {
+                        e.onError(exception);
+                        e.onComplete();
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        e.onNext(response.body().string());
+                        e.onComplete();
+                    }
+                });
+            }
+        }).observeOn(AndroidSchedulers.mainThread());
+    }
+
     String generateGetPara(Map<String,Object> params){
         String result = "";
         if (params != null){
@@ -114,8 +141,27 @@ public class HttpUtils {
            }
         }
         return builder.build();
-    };
+    }
 
+    RequestBody generatePostFileBody(final Map<String ,Object> params,final Map<String,File> files){
+        MultipartBody.Builder builder = new MultipartBody.Builder();
+        builder.setType(MultipartBody.FORM);
 
+        if (params != null){
+            for(Map.Entry<String,Object> entry : params.entrySet()){
+                builder.addFormDataPart(entry.getKey(),entry.getValue().toString());
+            }
+        }
+
+        if (files != null) {
+            for(Map.Entry<String,File> entry : files.entrySet()){
+                builder.addFormDataPart(entry.getKey(),
+                        entry.getValue().getName(),
+                        RequestBody.create(null, entry.getValue()));
+            }
+        }
+
+        return builder.build();
+    }
 
 }

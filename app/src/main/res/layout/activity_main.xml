@@ -12,6 +12,18 @@
         android:layout_height="wrap_content"
         android:text="测试发送网络请求"/>
 
+    <Button
+        android:id="@+id/btn_upload_test"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="测试上传文件"/>
+    
+    <ImageView
+        android:id="@+id/iv_test"
+        android:layout_width="84dp"
+        android:layout_height="84dp"
+        android:scaleType="centerCrop"/>
+
     <TextView
         android:id="@+id/tv_test"
         android:layout_width="match_parent"
